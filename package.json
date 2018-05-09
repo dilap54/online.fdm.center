@@ -1,0 +1,25 @@
+{
+  "name": "online.fdm.center",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dilap54@github.com/dilap54/online.fdm.center.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dilap54/online.fdm.center/issues"
+  },
+  "homepage": "https://github.com/dilap54/online.fdm.center#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "lodash": "^4.17.10",
+    "mysql2": "^1.5.3",
+    "sequelize": "^4.37.7"
+  }
+}
