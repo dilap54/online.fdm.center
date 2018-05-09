@@ -10,6 +10,11 @@ const User = sequelize.define('user', {
     mail: Sequelize.STRING,
     password: Sequelize.STRING,
     address: Sequelize.STRING,
+    balance: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    },
     isTemporary: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
