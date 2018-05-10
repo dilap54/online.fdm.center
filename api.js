@@ -42,7 +42,6 @@ router.post('/getTemporaryToken', (req, res)=>{
         )
     )
     .then((authToken)=>{
-        console.log(authToken.token);
         res.json(authToken);
     }).catch(err => {
         console.error(err);
@@ -91,7 +90,7 @@ router.post('/auth', authMiddleware, upload.single(), (req, res) => {
     }
     if (req.body.mail && req.body.password){
         User.findOne({
-            mail: req.body.mail
+            where: { mail: req.body.mail }
         }).then( user => 
             bcrypt.compare(req.body.password, user.password).then(hashEquals => {
                 if (hashEquals){

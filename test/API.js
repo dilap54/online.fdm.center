@@ -39,10 +39,7 @@ describe('API', () => {
         )
         .then(()=>{
             done();
-        })
-        .catch((err) => {
-            done(err);
-        })
+        }, done)
     });
 
     var token;
@@ -124,10 +121,9 @@ describe('API', () => {
                 })
         })
     })
-
+    var product;
     describe('POST /api/register', () => {
         var tokenRegister;
-        var product;
         it('creating new tokenRegister', (done) => {
             chai.request(server)
             .post('/api/getTemporaryToken')
@@ -178,6 +174,63 @@ describe('API', () => {
                 user.isTemporary.should.be.false
                 done()
             }, done)
+        })
+    })
+
+    describe('POST /api/auth', () => {
+        var tokenBeforeAuth;
+        var tokenAfterAuth;
+        it('creating new tokenAuth', (done) => {
+            chai.request(server)
+            .post('/api/getTemporaryToken')
+            .end((err, res) => {
+                tokenBeforeAuth = res.body;
+                done(err);
+            })
+        })
+        it('should return 401 without token', (done) => {
+            chai.request(server)
+            .post('/api/auth')
+            .end((err, res) => {
+                res.should.have.status(401);
+                done(err);
+            })
+        })
+        it('should return 401 with wrong creditinals', (done) => {
+            chai.request(server)
+            .post('/api/auth')
+            .field('mail', '123@123.ru')
+            .field('password', 'wrongPassword')
+            .end((err, res) => {
+                res.should.have.status(401);
+                done(err);
+            })
+        })
+        it('should return new token', (done) => {
+            chai.request(server)
+            .post('/api/auth')
+            .set('X-Auth-Token', tokenBeforeAuth.token)
+            .field('mail', '123@123.ru')
+            .field('password', 'password')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.token.should.be.a('string');
+                res.body.token.length.should.be.above(48);
+                tokenAfterAuth = res.body;
+                done(err);
+            })
+        })
+        it('shouldn`t userId before auth equal userId after auth', (done) => {
+            tokenBeforeAuth.userId.should.not.equal(tokenAfterAuth.userId);
+            done();
+        })
+        it('product should change id to new', (done) => {
+            Product.findOne({ where: {productId: product.productId} })
+            .then( dbProduct => {
+                dbProduct.userId.should.equal(tokenAfterAuth.userId);
+                done()
+            }, done);
         })
     })
     

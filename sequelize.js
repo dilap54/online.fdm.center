@@ -8,6 +8,7 @@ const sequelize = new Sequelize('online.fdm.center', 'root', '123321Aa', {
     acquire: 30000,
     idle: 10000
   },
+  logging: false
 });
 
 module.exports = sequelize;
