@@ -46,6 +46,10 @@ router.post('/getTemporaryToken', (req, res)=>{
     })
 });
 
+router.post('/register', (req, res)=>{
+
+})
+
 router.get('/materials', authMiddleware, (req, res)=>{
     Material.findAll().then(materials => {
         res.json(materials)
@@ -66,6 +70,7 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
             filename: req.file.filename
         }).then(file => 
             Product.create({
+                userId: req.user.userId,
                 fileId: file.fileId,
                 name: req.body.name,
                 description: req.body.description,

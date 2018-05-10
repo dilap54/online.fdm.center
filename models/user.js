@@ -27,3 +27,7 @@ const AuthToken = require('./authToken');
 User.hasMany(AuthToken, {
     foreignKey: 'userId'
 });
+const Product = require('./product');
+User.hasMany(Product, {
+    foreignKey: 'userId'
+});

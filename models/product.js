@@ -11,6 +11,10 @@ const Product = sequelize.define('product', {
         allowNull: false
     },
     description: Sequelize.STRING,
+    userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+    },
     fileId: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -28,11 +32,15 @@ const Product = sequelize.define('product', {
 
 module.exports = Product;
 
-const Material = require('./material')
+const Material = require('./material');
 Product.hasOne(Material, {
     foreignKey: 'materialId'
 })
-const File = require('./file')
+const File = require('./file');
 Product.hasOne(File, {
     foreignKey: 'fileId'
+})
+const User = require('./user');
+Product.belongsTo(User, {
+    foreignKey: 'userId'
 })
