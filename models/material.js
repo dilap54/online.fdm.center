@@ -14,6 +14,6 @@ const Material = sequelize.define('material', {
 module.exports = Material;
 
 const Product = require('./product');
-Material.belongsTo(Product, {
-    foreignKey: 'fileId'
+Material.hasMany(Product, {
+    foreignKey: 'materialId'
 })

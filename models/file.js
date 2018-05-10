@@ -16,6 +16,6 @@ const File = sequelize.define('file', {
 module.exports = File;
 
 const Product = require('./product');
-File.belongsTo(Product, {
+File.hasMany(Product, {
     foreignKey: 'fileId'
 })

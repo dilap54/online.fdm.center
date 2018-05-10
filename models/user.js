@@ -7,7 +7,9 @@ const User = sequelize.define('user', {
         autoIncrement: true
     },
     name: Sequelize.STRING,
-    mail: Sequelize.STRING,
+    mail: {
+        type: Sequelize.STRING,
+    },
     password: Sequelize.STRING,
     address: Sequelize.STRING,
     balance: {
@@ -25,7 +27,8 @@ module.exports = User;
 
 const AuthToken = require('./authToken');
 User.hasMany(AuthToken, {
-    foreignKey: 'userId'
+    foreignKey: 'userId',
+    onDelete: 'cascade'
 });
 const Product = require('./product');
 User.hasMany(Product, {

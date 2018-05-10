@@ -34,12 +34,12 @@ router.post('/getTemporaryToken', (req, res)=>{
     generateToken().then((token)=>
         User.create({
             isTemporary: true
-         }).then(user=>
-             AuthToken.create({
-                 token: token,
-                 userId: user.userId,
-             })
-         )
+        }).then(user=>
+            AuthToken.create({
+                token: token,
+                userId: user.userId,
+            })
+        )
     )
     .then((authToken)=>{
         console.log(authToken.token);
@@ -55,7 +55,6 @@ router.post('/register', authMiddleware, upload.single(), (req, res) => {
         res.status(403).end();
         return
     }
-    console.log(req.user.isTemporary);
     if (req.body.mail && req.body.password && req.body.password.length>2) {
         bcrypt.hash(req.body.password, 10)
         .then(hashedPassword => 
@@ -66,13 +65,66 @@ router.post('/register', authMiddleware, upload.single(), (req, res) => {
                 address: req.body.address
             })
         )
-        .then(updatedUser => {
-            res.json(updatedUser);
-        })
+        .then(updatedUser => 
+            generateToken()
+            .then( token => 
+                AuthToken.create({
+                    token: token,
+                    userId: updatedUser.userId,
+                })
+            )
+        )
+        .then( generatedToken => res.json(generatedToken))
         .catch((err) => {
             console.error(err);
             res.status(500).json(err);
-        })        
+        });
+    } else {
+        res.status(422).end();
+    }
+})
+
+router.post('/auth', authMiddleware, upload.single(), (req, res) => {
+    if (!req.user.isTemporary){
+        res.status(403).end();
+        return
+    }
+    if (req.body.mail && req.body.password){
+        User.findOne({
+            mail: req.body.mail
+        }).then( user => 
+            bcrypt.compare(req.body.password, user.password).then(hashEquals => {
+                if (hashEquals){
+                    return user
+                } else {
+                    return null
+                }
+            })
+        ).then( user => {
+            if (user){
+                return Product.update({//Переписывание всех изделий на нового пользователя
+                    userId: user.userId
+                }, {
+                    where: {
+                       userId:  req.user.userId
+                    }
+                })
+                .then( () => req.user.destroy() )
+                .then( generateToken )
+                .then( token => AuthToken.create({
+                    token: token,
+                    userId: user.userId,
+                }) )
+                .then( authToken => {
+                    res.json(authToken);
+                })
+            } else {
+                res.status(401).end();
+            }
+        }).catch((err) => {
+            console.error(err);
+            res.status(500).json(err);
+        });
     } else {
         res.status(422).end();
     }
