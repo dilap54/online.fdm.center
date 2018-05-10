@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../sequelize')
+const sequelize = require('../sequelize');
 const File = sequelize.define('file', {
     fileId: {
         type: Sequelize.INTEGER,
@@ -14,3 +14,8 @@ const File = sequelize.define('file', {
 });
 
 module.exports = File;
+
+const Product = require('./product');
+File.belongsTo(Product, {
+    foreignKey: 'fileId'
+})

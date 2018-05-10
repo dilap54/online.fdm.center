@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const multer = require('multer')
+const multer = require('multer');
 const upload = multer({
     dest: 'uploads/'
-})
+});
 
 const AuthToken = require('./models/authToken');
 const User = require('./models/user');
-const Material = require('./models/material')
-const File = require('./models/file')
+const Material = require('./models/material');
+const Product = require('./models/product');
+const File = require('./models/file');
 
-const authMiddleware = require('./authMiddleware')
+const authMiddleware = require('./authMiddleware');
 
 function generateToken(){
     return new Promise((resolve, reject)=>{
@@ -56,15 +57,22 @@ router.get('/materials', authMiddleware, (req, res)=>{
 
 //TODO: ограничить размер файла
 router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
-    if (req.file){
+    if (req.file && req.body.name && req.body.materialId){
         File.create({
             mimetype: req.file.mimetype,
             originalName: req.file.originalName,
             size: req.file.size,
             destination: req.file.destination,
             filename: req.file.filename
-        }).then(file => {
-            res.json(file);
+        }).then(file => 
+            Product.create({
+                fileId: file.fileId,
+                name: req.body.name,
+                description: req.body.description,
+                materialId: req.body.materialId
+            })
+        ).then(product => {
+            res.json(product);
         }).catch(err => {
             console.error(err);
             res.status(500).end();
