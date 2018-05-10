@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const multer = require('multer');
 const upload = multer({
     dest: 'uploads/'
 });
+const bodyParser = require('body-parser');
+
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 const AuthToken = require('./models/authToken');
 const User = require('./models/user');
@@ -46,11 +50,35 @@ router.post('/getTemporaryToken', (req, res)=>{
     })
 });
 
-router.post('/register', (req, res)=>{
-
+router.post('/register', authMiddleware, upload.single(), (req, res) => {
+    if (!req.user.isTemporary){
+        res.status(403).end();
+        return
+    }
+    console.log(req.user.isTemporary);
+    if (req.body.mail && req.body.password && req.body.password.length>2) {
+        bcrypt.hash(req.body.password, 10)
+        .then(hashedPassword => 
+            req.user.update({
+                isTemporary: false,
+                mail: req.body.mail,
+                password: hashedPassword,
+                address: req.body.address
+            })
+        )
+        .then(updatedUser => {
+            res.json(updatedUser);
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).json(err);
+        })        
+    } else {
+        res.status(422).end();
+    }
 })
 
-router.get('/materials', authMiddleware, (req, res)=>{
+router.get('/materials', authMiddleware, (req, res) => {
     Material.findAll().then(materials => {
         res.json(materials)
     }).catch(err => {
