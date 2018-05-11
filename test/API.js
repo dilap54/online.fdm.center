@@ -121,9 +121,87 @@ describe('API', () => {
                 })
         })
     })
-    var product;
+
+    describe('PUT /api/product/(:productId)', () => {
+        var token1;
+        var token2;
+        var product;
+        it('creating new token1', (done) => {
+            chai.request(server)
+            .post('/api/getTemporaryToken')
+            .end((err, res) => {
+                token1 = res.body;
+                done(err);
+            })
+        })
+        it('creating new token2', (done) => {
+            chai.request(server)
+            .post('/api/getTemporaryToken')
+            .end((err, res) => {
+                token2 = res.body;
+                done(err);
+            })
+        })
+        it('creating new product for token1', (done) => {
+            chai.request(server)
+            .post('/api/product')
+            .set('X-Auth-Token', token1.token)
+            .attach('model', fs.readFileSync('./test/laser.stl'), 'laser.stl')
+            .field('name','randomName')
+            .field('materialId',1)
+            .end((err, res) => {
+                product = res.body;
+                done(err);
+            })
+        })
+        
+        it('update product without token should return 401', (done) => {
+            chai.request(server)
+            .put('/api/product/'+product.productId)
+            .end((err, res) => {
+                res.should.have.status(401);
+                done(err);
+            })
+        })
+        it('update product without id should return 404', (done) => {
+            chai.request(server)
+            .put('/api/product/222')
+            .set('X-Auth-Token', token1.token)
+            .field('description', 'description')
+            .end((err, res) => {
+                res.should.have.status(404);
+                done(err);
+            })
+        })
+        it('should return 403 with wrong token', (done) => {
+            chai.request(server)
+            .put('/api/product/'+product.productId)
+            .set('X-Auth-Token', token2.token)
+            .field('description', 'testDescription')
+            .end((err, res) => {
+                res.should.have.status(403);
+                done(err);
+            })
+        })
+        it('should return product', (done) => {
+            chai.request(server)
+            .put('/api/product/'+product.productId)
+            .set('X-Auth-Token', token1.token)
+            .field('description', 'testDescription')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.description.should.be.a('string');
+                res.body.description.should.equal('testDescription')
+                done(err);
+            })
+        })
+    })
+
+    
     describe('POST /api/register', () => {
         var tokenRegister;
+        var product;
         it('creating new tokenRegister', (done) => {
             chai.request(server)
             .post('/api/getTemporaryToken')
@@ -178,6 +256,7 @@ describe('API', () => {
     })
 
     describe('POST /api/auth', () => {
+        var product;
         var tokenBeforeAuth;
         var tokenAfterAuth;
         it('creating new tokenAuth', (done) => {
@@ -185,6 +264,18 @@ describe('API', () => {
             .post('/api/getTemporaryToken')
             .end((err, res) => {
                 tokenBeforeAuth = res.body;
+                done(err);
+            })
+        })
+        it('creating new product', (done) => {
+            chai.request(server)
+            .post('/api/product')
+            .set('X-Auth-Token', tokenBeforeAuth.token)
+            .attach('model', fs.readFileSync('./test/laser.stl'), 'laser.stl')
+            .field('name','randomName')
+            .field('materialId',1)
+            .end((err, res) => {
+                product = res.body;
                 done(err);
             })
         })
@@ -199,6 +290,7 @@ describe('API', () => {
         it('should return 401 with wrong creditinals', (done) => {
             chai.request(server)
             .post('/api/auth')
+            .set('X-Auth-Token', tokenBeforeAuth.token)
             .field('mail', '123@123.ru')
             .field('password', 'wrongPassword')
             .end((err, res) => {

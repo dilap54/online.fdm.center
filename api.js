@@ -166,4 +166,43 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
     }
 })
 
+router.put('/product/(:productId)', authMiddleware, upload.single(), (req, res) => {
+    if (req.body && (req.body.name || req.body.materialId || req.body.description || req.body.count)){
+        Product.findOne({ where: {productId: req.params.productId} })
+        .then(product => {
+            if (!product){
+                res.status(404).end();
+                return
+            }
+            if (product.userId !== req.user.userId){
+                res.status(403).end();
+                return
+            }
+            if (req.body.name){
+                product.name = req.body.name
+            }
+            if (req.body.materialId){
+                product.materialId = req.body.materialId
+            }
+            if (req.body.description){
+                product.description = req.body.description
+            }
+            if (req.body.count){
+                product.count = req.body.count
+            }
+            return product.save()
+        })
+        .then(product => {
+            if (product){
+                res.json(product);
+            }
+        }).catch(err => {
+            console.error('err',err);
+            res.status(500).end();
+        })
+    } else {
+        res.status(422).end();
+    }
+})
+
 module.exports = router;
