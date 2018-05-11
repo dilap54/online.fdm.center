@@ -4,9 +4,7 @@ const app = express();
 const sequelize = require('./sequelize');
 const api = require('./api');
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
+app.use('/apidoc', express.static('apidoc'));
 
 app.use('/api', api);
 

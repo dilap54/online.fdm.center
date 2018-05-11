@@ -3,13 +3,13 @@ process.env.NODE_ENV = 'test';
 const fs = require('fs');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../index');
+const server = require('../app/index');
 const should = chai.should();
 
-const sequelize = require('../sequelize');
-const Material = require('../models/material')
-const Product = require('../models/product')
-const User = require('../models/user')
+const sequelize = require('../app/sequelize');
+const Material = require('../app/models/material')
+const Product = require('../app/models/product')
+const User = require('../app/models/user')
 
 chai.use(chaiHttp);
 
@@ -98,6 +98,7 @@ describe('API', () => {
     })
 
     describe('POST /api/product', () => {
+        var countFilesInUploadDir = fs.readdirSync('./uploads').length
         it('should get error without file', (done) => {
             chai.request(server)
                 .post('/api/product')
@@ -119,6 +120,10 @@ describe('API', () => {
                     res.body.should.have.any.keys('productId', 'name', 'materialId', 'count');
                     done(err);
                 })
+        })
+        it('should increase files count in uploads dir', (done) => {
+            fs.readdirSync('./uploads').length.should.above(countFilesInUploadDir);
+            done();
         })
     })
 

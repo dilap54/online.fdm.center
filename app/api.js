@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const upload = multer({
-    dest: 'uploads/'
+    dest: './uploads/'
 });
 const bodyParser = require('body-parser');
 
@@ -30,6 +30,33 @@ function generateToken(){
     })
 }
 
+/**
+ * @apiDefine requireAuth
+ * @apiHeader X-Auth-Token токен авторизации
+ * @apiError 401 Токен не был передан
+ * @apiError 403 Токен не найден в базе
+ */
+/**
+ * @apiDefine returnToken
+ * @apiSuccess {object} token
+ * @apiSuccess {string} token.token Токен
+ * @apiSuccess {number} token.userId Id пользователя
+ */
+/**
+ * @apiDefine returnProduct
+ * @apiSuccess {object} product
+ * @apiSuccess {number} product.productId Id изделия
+ * @apiSuccess {string} product.name Название изделия
+ * @apiSuccess {number} product.materialId Id материала 
+ * @apiSuccess {string} product.description Описание изделия
+ */
+
+/**
+ * @api {POST} /api/getTemporaryToken get temporary token
+ * @apiDescription Создает временного пользователя с ограниченными правами и возвращает токен авторизации
+ * @apiGroup Auth
+ * @apiUse returnToken
+ */
 router.post('/getTemporaryToken', (req, res)=>{
     generateToken().then((token)=>
         User.create({
@@ -49,6 +76,16 @@ router.post('/getTemporaryToken', (req, res)=>{
     })
 });
 
+/**
+ * @api {POST} /api/register do register
+ * @apiDescription Регистрирует нового пользователя с логином и паролем, переводит все изделия временного пользователя на нового, возвращает новый токен
+ * @apiGroup Auth
+ * @apiParam mail Почта
+ * @apiParam password Пароль
+ * @apiParam [address] Адрес
+ * @apiUse returnToken
+ * @apiUse requireAuth
+ */
 router.post('/register', authMiddleware, upload.single(), (req, res) => {
     if (!req.user.isTemporary){
         res.status(403).end();
@@ -83,6 +120,15 @@ router.post('/register', authMiddleware, upload.single(), (req, res) => {
     }
 })
 
+/**
+ * @api {POST} /api/auth do auth
+ * @apiDescription Авторизует пользователя с помощью логина и пароля, переводоит все изделия временного пользователя на него, возвращает новый токен
+ * @apiGroup Auth
+ * @apiParam mail Почта
+ * @apiParam password Пароль
+ * @apiUse returnToken
+ * @apiUse requireAuth
+ */
 router.post('/auth', authMiddleware, upload.single(), (req, res) => {
     if (!req.user.isTemporary){
         res.status(403).end();
@@ -129,6 +175,17 @@ router.post('/auth', authMiddleware, upload.single(), (req, res) => {
     }
 })
 
+/**
+ * @api {GET} /api/materials get materials
+ * @apiDescription Отдает доступные для печати материалы
+ * @apiGroup Product
+ * @apiSuccess {object} material
+ * @apiSuccess {number} material.materialId ID материала
+ * @apiSuccess {string} material.type Тип материала
+ * @apiSuccess {string} material.color Цвет материала
+ * @apiSuccess {number} material.count Количество материала в граммах
+ * @apiUse requireAuth
+ */
 router.get('/materials', authMiddleware, (req, res) => {
     Material.findAll().then(materials => {
         res.json(materials)
@@ -138,6 +195,17 @@ router.get('/materials', authMiddleware, (req, res) => {
     })
 })
 
+/**
+ * @api {POST} /api/product create product
+ * @apiDescription Загружает 3d модель, создает с ней новое изделие на сервере, возвращает изделие
+ * @apiGroup Product
+ * @apiParam {file} model Файл с моделью
+ * @apiParam name Название изделия
+ * @apiParam materialId Id материала
+ * @apiParam [description] Описание изделия
+ * @apiUse returnProduct
+ * @apiUse requireAuth
+ */
 //TODO: ограничить размер файла
 router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
     if (req.file && req.body.name && req.body.materialId){
@@ -166,6 +234,17 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
     }
 })
 
+/**
+ * @api {PUT} /api/product/(:productId) update product
+ * @apiDescription Обновляет данные изделия, возвращает новые данные
+ * @apiGroup Product
+ * @apiParam [name] Название изделия
+ * @apiParam [materialId] Id материала
+ * @apiParam [description] Описание изделия
+ * @apiParam [count] Количество изделий
+ * @apiUse returnProduct
+ * @apiUse requireAuth
+ */
 router.put('/product/(:productId)', authMiddleware, upload.single(), (req, res) => {
     if (req.body && (req.body.name || req.body.materialId || req.body.description || req.body.count)){
         Product.findOne({ where: {productId: req.params.productId} })
