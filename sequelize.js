@@ -1,6 +1,8 @@
+const config = require('./config.json').mysql;
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('online.fdm.center', 'root', '123321Aa', {
-  host: '192.168.1.111',
+const sequelize = new Sequelize(config.database, config.user, config.password, {
+  host: config.host,
+  port: config.port,
   dialect: 'mysql',
   pool: {
     max: 5,
