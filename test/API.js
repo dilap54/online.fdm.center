@@ -96,7 +96,7 @@ describe('API', () => {
                 })
         })
     })
-
+    var product;
     describe('POST /api/product', () => {
         var countFilesInUploadDir = fs.readdirSync('./uploads').length
         it('should get error without file', (done) => {
@@ -118,6 +118,7 @@ describe('API', () => {
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.have.any.keys('productId', 'name', 'materialId', 'count');
+                    product = res.body;
                     done(err);
                 })
         })
@@ -125,6 +126,32 @@ describe('API', () => {
             fs.readdirSync('./uploads').length.should.above(countFilesInUploadDir);
             done();
         })
+    })
+
+    describe('POST /api/duplicateProduct/(:productId)', () => {
+        it('should get 404 if productId not exists', (done) => {
+            chai.request(server)
+                .post('/api/duplicateProduct/1234')
+                .set('X-Auth-Token', token.token)
+                .end((err, res) => {
+                    res.should.have.status(404);
+                    done(err);
+                })
+        })
+        it('should get product', (done) => {
+            chai.request(server)
+                .post('/api/duplicateProduct/'+product.productId)
+                .set('X-Auth-Token', token.token)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.any.keys('productId', 'name', 'materialId', 'count');
+                    res.body.productId.should.not.equal(product.productId);
+                    res.body.materialId.should.equal(product.materialId);
+                    res.body.name.should.equal(product.name);
+                    done(err);
+                })
+        })
+            
     })
 
     describe('PUT /api/product/(:productId)', () => {

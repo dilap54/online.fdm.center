@@ -2,8 +2,9 @@
   "name": "online.fdm.center",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
+    "start": "node app/index.js",
     "test": "mocha --timeout 10000"
   },
   "repository": {
