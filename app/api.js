@@ -15,8 +15,19 @@ const User = require('./models/user');
 const Material = require('./models/material');
 const Product = require('./models/product');
 const File = require('./models/file');
-
+const config = require('./config.json');
 const authMiddleware = require('./authMiddleware');
+const serverAuthMiddleware = (req, res, next) => {
+    if (req.header('x-auth-token')){
+        if (req.header('x-auth-token') === config.serverAuthToken){
+            next();
+        } else {
+            res.status(403).end();
+        }
+    } else {
+        res.status(401).end();
+    }
+}
 
 function generateToken(){
     return new Promise((resolve, reject)=>{
@@ -37,6 +48,12 @@ function generateToken(){
  * @apiError 403 Токен не найден в базе
  */
 /**
+ * @apiDefine requireServerAuth
+ * @apiHeader X-Auth-Token токен серверной авторизации
+ * @apiError 401 Токен не был передан
+ * @apiError 403 Токен не найден в базе
+ */
+/**
  * @apiDefine returnToken
  * @apiSuccess {object} token
  * @apiSuccess {string} token.token Токен
@@ -50,7 +67,15 @@ function generateToken(){
  * @apiSuccess {number} product.materialId Id материала 
  * @apiSuccess {string} product.description Описание изделия
  */
-
+/**
+ * @apiDefine returnFile
+ * @apiSuccess {object} file
+ * @apiSuccess {number} file.fileId Id файла
+ * @apiSuccess {string} file.size Размер файла
+ * @apiSuccess {string} file.filename Имя файла
+ * @apiSuccess {string} file.status Статус файла
+ * @apiSuccess {string} file.amount Объем модели
+ */
 /**
  * @api {POST} /api/getTemporaryToken get temporary token
  * @apiDescription Создает временного пользователя с ограниченными правами и возвращает токен авторизации
@@ -234,6 +259,13 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
     }
 })
 
+/**
+ * @api {POST} /duplicateProduct/(:productId) duplicate product
+ * @apiDescription Дублирует изделие, позволяя не загружать модель заново
+ * @apiGroup Product
+ * @apiUse returnProduct
+ * @apiUse requireAuth
+ */
 router.post('/duplicateProduct/(:productId)', authMiddleware, (req, res) => {
     Product.findOne({ where: {productId: req.params.productId} })
     .then(product => {
@@ -296,6 +328,44 @@ router.put('/product/(:productId)', authMiddleware, upload.single(), (req, res) 
         .then(product => {
             if (product){
                 res.json(product);
+            }
+        }).catch(err => {
+            console.error('err',err);
+            res.status(500).end();
+        })
+    } else {
+        res.status(422).end();
+    }
+})
+
+/**
+ * @api {PUT} /api/file/(:fileId) update file
+ * @apiDescription Обновляет данные модели
+ * @apiGroup Server
+ * @apiParam [status] Статус модели
+ * @apiParam [amount] Размеры модели
+ * @apiUse requireServerAuth
+ * @apiUse returnFile
+ */
+router.put('/file/(:fileId)', serverAuthMiddleware, upload.single(), (req, res) => {
+    if (req.body && (req.body.status || req.body.amount)){
+        File.findOne({ where: {fileId: req.params.fileId} })
+        .then(file => {
+            if (!file){
+                res.status(404).end();
+                return
+            }
+            if (req.body.status){
+                file.status = req.body.status
+            }
+            if (req.body.amount){
+                file.amount = req.body.amount
+            }
+            return file.save()
+        })
+        .then(file => {
+            if (file){
+                res.json(file);
             }
         }).catch(err => {
             console.error('err',err);

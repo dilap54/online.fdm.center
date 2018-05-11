@@ -5,11 +5,17 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../app/index');
 const should = chai.should();
+const expect = chai.expect;
+
+const config = require('../app/config.json');
 
 const sequelize = require('../app/sequelize');
-const Material = require('../app/models/material')
-const Product = require('../app/models/product')
-const User = require('../app/models/user')
+const Material = require('../app/models/material');
+const Product = require('../app/models/product');
+const User = require('../app/models/user');
+const File = require('../app/models/file');
+const AuthToken = require('../app/models/authToken');
+
 
 chai.use(chaiHttp);
 
@@ -355,6 +361,61 @@ describe('API', () => {
                 dbProduct.userId.should.equal(tokenAfterAuth.userId);
                 done()
             }, done);
+        })
+        it('old user should be deleted', (done) => {
+            User.findOne({ where: {userId: tokenBeforeAuth.userId} })
+            .then( user => {
+                expect(user).to.be.null;
+                done()
+            }, done)
+        })
+        it('old authToken should be deleted', (done) => {
+            AuthToken.findOne({ where: {userId: tokenBeforeAuth.userId} })
+            .then( authToken => {
+                expect(authToken).to.be.null;
+                done()
+            }, done)
+        })
+    })
+
+    describe('PUT /api/file/(:fileId)', () => {
+        it('should return 401 without x-auth-token', (done) => {
+            chai.request(server)
+            .put('/api/file/'+product.fileId)
+            .field('status', 'new status')
+            .end((err, res) => {
+                res.should.have.status(401);
+                done(err);
+            })
+        })
+        it('should return 403 with wrong x-auth-token', (done) => {
+            chai.request(server)
+            .put('/api/file/'+product.fileId)
+            .set('X-Auth-Token', token.token)
+            .field('status', 'new status')
+            .end((err, res) => {
+                res.should.have.status(403);
+                done(err);
+            })
+        })
+        it('should return new file', (done) => {
+            chai.request(server)
+            .put('/api/file/'+product.fileId)
+            .set('X-Auth-Token', config.serverAuthToken)
+            .field('status', 'new status')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.status.should.equal('new status');
+                done(err);
+            })
+        })
+        it('should save new file status in database', (done) => {
+            File.findOne({ where: {fileId: product.fileId}})
+            .then(file => {
+                file.status.should.equal('new status')
+                done()
+            }, done)
         })
     })
     

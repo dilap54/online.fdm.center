@@ -10,7 +10,9 @@ const File = sequelize.define('file', {
     originalName: Sequelize.STRING,
     size: Sequelize.STRING,
     destination: Sequelize.STRING,
-    filename: Sequelize.STRING
+    filename: Sequelize.STRING,
+    status: Sequelize.STRING,
+    amount: Sequelize.INTEGER
 });
 
 module.exports = File;

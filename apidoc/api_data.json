@@ -411,10 +411,92 @@
     }
   },
   {
+    "type": "POST",
+    "url": "/duplicateProduct/(:productId)",
+    "title": "duplicate product",
+    "description": "<p>Дублирует изделие, позволяя не загружать модель заново</p>",
+    "group": "Product",
+    "version": "0.0.0",
+    "filename": "app/api.js",
+    "groupTitle": "Product",
+    "name": "PostDuplicateproductProductid",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "object",
+            "optional": false,
+            "field": "product",
+            "description": ""
+          },
+          {
+            "group": "Success 200",
+            "type": "number",
+            "optional": false,
+            "field": "product.productId",
+            "description": "<p>Id изделия</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "product.name",
+            "description": "<p>Название изделия</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "number",
+            "optional": false,
+            "field": "product.materialId",
+            "description": "<p>Id материала</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "product.description",
+            "description": "<p>Описание изделия</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "optional": false,
+            "field": "X-Auth-Token",
+            "description": "<p>токен авторизации</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Токен не был передан</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Токен не найден в базе</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "PUT",
     "url": "/api/product/(:productId)",
     "title": "update product",
-    "description": "<p>Обновляет данные изделия</p>",
+    "description": "<p>Обновляет данные изделия, возвращает новые данные</p>",
     "group": "Product",
     "parameter": {
       "fields": {
@@ -517,6 +599,113 @@
             "optional": false,
             "field": "403",
             "description": "<p>Токен не найден в базе</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "PUT",
+    "url": "/api/file/(:fileId)",
+    "title": "update file",
+    "description": "<p>Обновляет данные модели</p>",
+    "group": "Server",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "optional": true,
+            "field": "status",
+            "description": "<p>Статус модели</p>"
+          },
+          {
+            "group": "Parameter",
+            "optional": true,
+            "field": "amount",
+            "description": "<p>Размеры модели</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "app/api.js",
+    "groupTitle": "Server",
+    "name": "PutApiFileFileid",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "optional": false,
+            "field": "X-Auth-Token",
+            "description": "<p>токен серверной авторизации</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Токен не был передан</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Токен не найден в базе</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "object",
+            "optional": false,
+            "field": "file",
+            "description": ""
+          },
+          {
+            "group": "Success 200",
+            "type": "number",
+            "optional": false,
+            "field": "file.fileId",
+            "description": "<p>Id файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.size",
+            "description": "<p>Размер файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.filename",
+            "description": "<p>Имя файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.status",
+            "description": "<p>Статус файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.amount",
+            "description": "<p>Объем модели</p>"
           }
         ]
       }
