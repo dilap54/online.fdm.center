@@ -605,6 +605,95 @@ define({ "api": [
     }
   },
   {
+    "type": "POST",
+    "url": "/api/getFileToProcess",
+    "title": "get file to process",
+    "description": "<p>Получает необработанный файл, если есть, ставит статус &quot;в обработке&quot;</p>",
+    "group": "Server",
+    "version": "0.0.0",
+    "filename": "app/api.js",
+    "groupTitle": "Server",
+    "name": "PostApiGetfiletoprocess",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "optional": false,
+            "field": "X-Auth-Token",
+            "description": "<p>токен серверной авторизации</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Токен не был передан</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Токен не найден в базе</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "object",
+            "optional": false,
+            "field": "file",
+            "description": ""
+          },
+          {
+            "group": "Success 200",
+            "type": "number",
+            "optional": false,
+            "field": "file.fileId",
+            "description": "<p>Id файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.size",
+            "description": "<p>Размер файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.filename",
+            "description": "<p>Имя файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.status",
+            "description": "<p>Статус файла</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "string",
+            "optional": false,
+            "field": "file.amount",
+            "description": "<p>Объем модели</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "PUT",
     "url": "/api/file/(:fileId)",
     "title": "update file",

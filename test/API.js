@@ -418,5 +418,34 @@ describe('API', () => {
             }, done)
         })
     })
+
+    describe('POST /api/getFileToProcess', () => {
+        var countBeforeQuery = 0;
+        it('count files with status processing', (done) => {
+            File.count({where: {status: File.statuses.PROCESSING}})
+            .then(count => {
+                countBeforeQuery = count;
+                done();
+            }, done)
+        })
+        it('should return file', (done) => {
+            chai.request(server)
+            .post('/api/getFileToProcess')
+            .set('X-Auth-Token', config.serverAuthToken)
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.status.should.equal(File.statuses.PROCESSING);
+                done(err);
+            })
+        })
+        it('should increase files with status processing', (done) => {
+            File.count({where: {status: File.statuses.PROCESSING}})
+            .then(count => {
+                count.should.be.above(countBeforeQuery);
+                done();
+            }, done)
+        })
+    })
     
 })

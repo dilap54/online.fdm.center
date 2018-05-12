@@ -15,6 +15,11 @@ const File = sequelize.define('file', {
     amount: Sequelize.INTEGER
 });
 
+File.statuses = {
+    WAITING_FOR_PROCESSING: 'WAITING_FOR_PROCESSING',
+    PROCESSING: 'PROCESSING'
+}
+
 module.exports = File;
 
 const Product = require('./product');

@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
+const sequelize = require('./sequelize');
 const AuthToken = require('./models/authToken');
 const User = require('./models/user');
 const Material = require('./models/material');
@@ -239,7 +240,8 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
             originalName: req.file.originalName,
             size: req.file.size,
             destination: req.file.destination,
-            filename: req.file.filename
+            filename: req.file.filename,
+            status: File.statuses.WAITING_FOR_PROCESSING
         }).then(file => 
             Product.create({
                 userId: req.user.userId,
@@ -374,6 +376,33 @@ router.put('/file/(:fileId)', serverAuthMiddleware, upload.single(), (req, res) 
     } else {
         res.status(422).end();
     }
+})
+
+/**
+ * @api {POST} /api/getFileToProcess get file to process
+ * @apiDescription Получает необработанный файл, если есть, ставит статус "в обработке"
+ * @apiGroup Server
+ * @apiUse requireServerAuth
+ * @apiUse returnFile
+ */
+//TODO: если файл запросят 2 сервера одновременно, то будет состояние гонки
+router.post('/getFileToProcess', serverAuthMiddleware, (req, res) => {
+    File.findOne({
+        where: {
+            status: File.statuses.WAITING_FOR_PROCESSING
+        }
+    }).then(file => {
+        if (file){
+            return file.update({
+                status: File.statuses.PROCESSING
+            })
+        }
+    }).then(file => {
+        res.json(file)
+    }).catch(err => {
+        console.error(err);
+        res.status(500).end();
+    })
 })
 
 module.exports = router;
