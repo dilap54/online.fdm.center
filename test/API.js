@@ -160,6 +160,21 @@ describe('API', () => {
             
     })
 
+    describe('GET /api/products', () => {
+        it('should return 2 own products', (done) => {
+            chai.request(server)
+            .get('/api/products')
+            .set('X-Auth-Token', token.token)
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('array');
+                res.body.length.should.equal(2);
+                console.log(res.body);
+                done(err);
+            })
+        })
+    })
+
     describe('PUT /api/product/(:productId)', () => {
         var token1;
         var token2;
@@ -236,7 +251,6 @@ describe('API', () => {
         })
     })
 
-    
     describe('POST /api/register', () => {
         var tokenRegister;
         var product;

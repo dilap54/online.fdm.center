@@ -271,7 +271,7 @@ router.post('/product', authMiddleware, upload.single('model'), (req, res) => {
 router.post('/duplicateProduct/(:productId)', authMiddleware, (req, res) => {
     Product.findOne({ where: {productId: req.params.productId} })
     .then(product => {
-        if (product){
+        if (product && product.userId === req.user.userId){
             let {productId, ...newProduct} = product.get({plain: true})
             return Product.create(newProduct)
         } else {
@@ -338,6 +338,17 @@ router.put('/product/(:productId)', authMiddleware, upload.single(), (req, res) 
     } else {
         res.status(422).end();
     }
+})
+
+router.get('/products', authMiddleware, (req, res) => {
+    Product.findAll({
+        where: { userId: req.user.userId }
+    }).then(products => {
+        res.json(products);
+    }).catch(err => {
+        console.error(err);
+        res.status(500).end();
+    })
 })
 
 /**
